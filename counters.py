@@ -11,9 +11,7 @@ class Counter:
             self.n += 1
 
     def do_work(self):
-        print("calling simple counter")
         for job in self.work:
-            print("counting up to %i" % job)
             self.incr(job)
 
 class StupidLockingCounter(Counter):
@@ -22,9 +20,7 @@ class StupidLockingCounter(Counter):
         super().__init__(work)
             
     def do_work(self):
-        print("calling supid counter")
         for job in self.work:
-            print("counting up to %i" % job)
             self._lock.acquire()
             self.incr(job)
             self._lock.release()
@@ -34,7 +30,6 @@ class UnsharedConcurrentCounter(Counter):
         super().__init__(work)
 
     def do_work(self, f):
-        print("calling parallelized unshared counter")
         self.workers = mp.Pool(processes=len(self.work))
         self.workers.map(f, self.work)
 
@@ -55,16 +50,13 @@ class SharedConcurrentCounter(Counter):
         if not q.empty():
             while not q.empty():
                 job = q.get()
-                print("counting up to %i" % job)
                 for i in range(job):
                     n += 1
 
     def do_work(self):
-        print("calling shared concurrent counter")
         tuple(map(lambda x: x.start(), self._workers))
 
 def incr(upto):
-    print("counting up to %i" % upto)
     n = 0
     for i in range(upto):
         n += 1
