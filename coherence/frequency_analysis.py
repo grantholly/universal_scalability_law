@@ -24,9 +24,11 @@ def count_letters(item):
 
 
 if __name__ == '__main__':
-    import operator
     import glob
+    import operator
+    import time
 
+    processList = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     input_files = glob.glob('*.txt')
 
     TR = string.maketrans(string.punctuation, ' ' * len(string.punctuation))
@@ -37,12 +39,18 @@ if __name__ == '__main__':
             for line in f:
                 texts = texts + line.translate(TR)
 
-    mapper = SimpleMapReduce(word_to_letters, count_letters)
-    letter_counts = mapper(texts.split())
-    letter_counts.sort(key=operator.itemgetter(1))
-    letter_counts.reverse()
+    for processes in processList:
+        for _ in range(10):
+            mapper = SimpleMapReduce(word_to_letters, count_letters, processes)
+            start_time = time.time()
+            letter_counts = mapper(texts.split())
+            end_time = time.time()
+            print "{0}\t{1}".format(processes, end_time - start_time)
 
-    print '\nTOP LETTERS BY FREQUENCY\n'
-    longest = max(len(letter) for letter, count in letter_counts)
-    for letter, count in letter_counts:
-        print '%-*s: %8s' % (longest+1, letter, count)
+#    letter_counts.sort(key=operator.itemgetter(1))
+#    letter_counts.reverse()
+
+#    print '\nTOP LETTERS BY FREQUENCY\n'
+#    longest = max(len(letter) for letter, count in letter_counts)
+#    for letter, count in letter_counts:
+#        print '%-*s: %8s' % (longest+1, letter, count)
