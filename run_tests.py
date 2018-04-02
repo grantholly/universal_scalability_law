@@ -12,30 +12,11 @@ from counters import (Counter,
 
 OUTPUT_DIR = os.path.dirname(__file__) + "/output/"
 TIME_FMT = "%Y-%m-%d-%H,%M,%S"
-
-def time_it(f):
-    start = time.time()
-    f()
-    end = time.time()
-    print(end - start)
-
-def simple_counter_trial(trials, workload):
-    with open(OUTPUT_DIR + 
-              "non_concurrency" +
-              date_stamp, "a") as f:
-        for trial in trials:
-            # do each trial
-            pass
-            
-def unshared_counter_trial(trials, workload):
-    with open(OUTPUT_DIR + 
-              "unshared_concurrency" +
-              date_stamp, "a") as f:
-        pass
-
-def shared_concurrent_counter_trial(trials, concurrency, workload):
-    with open(OUTPUT_DIR + "shared_concurrency", "a") as f:
-        pass
+CONFIG = {
+    "workload_size": 20,
+    "job_ceiling": 1000000,
+    "number_of_trials": 10,
+}
 
 def counter_trial(counter_type, trials, workload, 
                   file_name, concurrency=0, **kwargs):
@@ -60,33 +41,22 @@ def counter_trial(counter_type, trials, workload,
             end = time.time()
             duration = end - start
             results.append(duration)
-            f.write(str(duration) + "\n")
-            # need to get the average from the results still
-        
+            # ugh, I should have thought of this ahead of time
+            if type(counter) == UnsharedConcurrentCounter:
+                concurrency=len(workload)
+            f.write(str(concurrency) + "," + 
+                    str(duration) + "\n")
             
 def main():
-    size = 20
-    work = [random.randint(0,1000000) for n in range(size)]
-    trials = 10
+    size = CONFIG["workload_size"]
+    work = [random.randint(0, CONFIG["job_ceiling"]) for n in range(size)]
+    trials = CONFIG["number_of_trials"]
 
     counter_trial(Counter, trials, work, "plain_counter")
     counter_trial(UnsharedConcurrentCounter, trials, work, 
                   "mapped_counter", func=incr)
     counter_trial(SharedConcurrentCounter, trials, work,
                   "shared_counter", concurrency=2)
-"""
-    sc = Counter(work)
-    time_it(sc.do_work)
-
-    ucc = UnsharedConcurrentCounter(work)
-    start = time.time()
-    ucc.do_work(incr)
-    end = time.time()
-    print(end - start)
-
-    scc = SharedConcurrentCounter(work, 4)
-    time_it(scc.do_work)
-"""
 
 
 main()
