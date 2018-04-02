@@ -42,10 +42,13 @@ def counter_trial(counter_type, trials, workload,
             duration = end - start
             results.append(duration)
             # ugh, I should have thought of this ahead of time
-            if type(counter) == UnsharedConcurrentCounter:
-                concurrency=len(workload)
-            f.write(str(concurrency) + "," + 
-                    str(duration) + "\n")
+            # instead of this ugly verbose hack
+            if type(c) == UnsharedConcurrentCounter:
+                f.write(str(len(workload)) + "," +
+                        str(duration) + "\n")
+            else:
+                f.write(str(concurrency) + "," + 
+                        str(duration) + "\n")
             
 def main():
     size = CONFIG["workload_size"]
