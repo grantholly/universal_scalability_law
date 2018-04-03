@@ -3,6 +3,8 @@ import random
 import datetime
 import time
 import os
+import json
+import sys
 
 from counters import (Counter, 
                       UnsharedConcurrentCounter,
@@ -13,9 +15,10 @@ from counters import (Counter,
 OUTPUT_DIR = os.path.dirname(__file__) + "/output/"
 TIME_FMT = "%Y-%m-%d-%H,%M,%S"
 CONFIG = {
-    "workload_size": 20,
+    "workload_size": 500,
     "job_ceiling": 1000000,
     "number_of_trials": 10,
+    "concurrency": int(sys.argv[1]),
 }
 
 def counter_trial(counter_type, trials, workload, 
@@ -25,6 +28,7 @@ def counter_trial(counter_type, trials, workload,
     with open(OUTPUT_DIR +
               file_name +
               date_stamp, "a") as f:
+        f.write(json.dumps(CONFIG))
         for trial in range(trials):
             # make a counter instance
             if concurrency != 0:
@@ -55,11 +59,11 @@ def main():
     work = [random.randint(0, CONFIG["job_ceiling"]) for n in range(size)]
     trials = CONFIG["number_of_trials"]
 
-    counter_trial(Counter, trials, work, "plain_counter")
-    counter_trial(UnsharedConcurrentCounter, trials, work, 
-                  "mapped_counter", func=incr)
+#    counter_trial(Counter, trials, work, "plain_counter")
+#    counter_trial(UnsharedConcurrentCounter, trials, work, 
+#                  "mapped_counter", func=incr)
     counter_trial(SharedConcurrentCounter, trials, work,
-                  "shared_counter", concurrency=2)
+                  "shared_counter", concurrency=CONFIG["concurrency"])
 
 
 main()

@@ -32,6 +32,7 @@ class UnsharedConcurrentCounter(Counter):
     def do_work(self, f):
         self.workers = mp.Pool(processes=len(self.work))
         self.workers.map(f, self.work)
+        self.workers.close()
 
 class SharedConcurrentCounter(Counter):
     def __init__(self, work, worker_count):
@@ -55,6 +56,7 @@ class SharedConcurrentCounter(Counter):
 
     def do_work(self):
         tuple(map(lambda x: x.start(), self._workers))
+        tuple(map(lambda x: x.terminate(), [p for p in self._workers if not p.is_alive()]))
 
 def incr(upto):
     n = 0
