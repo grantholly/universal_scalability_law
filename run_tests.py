@@ -11,12 +11,11 @@ from counters import (Counter,
                       incr,
                       SharedConcurrentCounter)
 
-
 OUTPUT_DIR = os.path.dirname(__file__) + "/output/"
 TIME_FMT = "%Y-%m-%d-%H,%M,%S"
 CONFIG = {
     "workload_size": 500,
-    "job_ceiling": 1000000,
+    "job_ceiling": int(sys.argv[2]),
     "number_of_trials": 10,
     "concurrency": int(sys.argv[1]),
 }
@@ -28,14 +27,12 @@ def counter_trial(counter_type, trials, workload,
     with open(OUTPUT_DIR +
               file_name +
               date_stamp, "a") as f:
-        f.write(json.dumps(CONFIG))
+        f.write(json.dumps(CONFIG) + "\n")
         for trial in range(trials):
-            # make a counter instance
             if concurrency != 0:
                 c = counter_type(workload, concurrency)
             else:
                 c = counter_type(workload)
-            # do each trial
             if kwargs:
                 start = time.time()
                 c.do_work(kwargs["func"])
@@ -53,15 +50,16 @@ def counter_trial(counter_type, trials, workload,
             else:
                 f.write(str(concurrency) + "," + 
                         str(duration) + "\n")
+
             
 def main():
     size = CONFIG["workload_size"]
     work = [random.randint(0, CONFIG["job_ceiling"]) for n in range(size)]
     trials = CONFIG["number_of_trials"]
 
-#    counter_trial(Counter, trials, work, "plain_counter")
-#    counter_trial(UnsharedConcurrentCounter, trials, work, 
-#                  "mapped_counter", func=incr)
+    counter_trial(Counter, trials, work, "plain_counter")
+    counter_trial(UnsharedConcurrentCounter, trials, work, 
+                  "mapped_counter", func=incr)
     counter_trial(SharedConcurrentCounter, trials, work,
                   "shared_counter", concurrency=CONFIG["concurrency"])
 
